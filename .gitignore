@@ -1,0 +1,5 @@
+# Mounted vault content (not part of this repo)
+vault/
+
+# Claude Code local overrides (personal, not shared)
+.claude/settings.local.json
