@@ -1,0 +1,48 @@
+services:
+  pkm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pkm-sandbox
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - "${TTYD_PORT:-7681}:7681"
+    volumes:
+      - .:/workspace
+      - ${PKM_VAULT_PATH:-./vault}:/workspace/vault
+      - pkm-claude-config:/home/claude/.claude
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - TERM=xterm-256color
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    stdin_open: true
+    tty: true
+    command: >
+      ttyd -W -p 7681 tmux new-session -A -s main
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:7681/"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    # ── Optional: ttyd authentication ──
+    # To enable, replace the command above with:
+    #   command: >
+    #     ttyd -W -p 7681 --credential user:${TTYD_PASSWORD:-changeme}
+    #     tmux new-session -A -s main
+    # Then set TTYD_PASSWORD in your .env file and configure
+    # matching credentials in the Obsidian plugin settings.
+    #
+    # ── Optional: resource limits ──
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 4G
+    #       cpus: "2.0"
+
+volumes:
+  pkm-claude-config:

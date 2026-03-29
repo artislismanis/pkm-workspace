@@ -2,8 +2,9 @@
 
 ## Environment
 
-- **Devcontainer** providing a self-contained tooling environment: Node 22 LTS, Python 3 + uv, jq, Claude Code CLI
-- Vault bind-mounted from host at `/workspace/vault/` (configured via `mounts` in `.devcontainer/devcontainer.json`)
+- **Docker Compose container** (Ubuntu 22.04) providing: Node 22 LTS (nvm), Python 3.12 (uv), Claude Code CLI, ttyd web terminal, tmux
+- **ttyd** serves a web terminal on port 7681; the obsidian-claude-sandbox plugin connects via HTTP/WebSocket
+- Vault bind-mounted from host at `/workspace/vault/` (configured via `PKM_VAULT_PATH` in `.env`)
 - Changes to vault files are **immediately reflected on the host filesystem**
 
 ## Key Paths
@@ -12,7 +13,9 @@
 |------|---------|
 | `/workspace/` | Repository root (tooling and configuration) |
 | `/workspace/vault/` | The Obsidian vault (bind-mounted from host) |
-| `/workspace/.devcontainer/` | Container configuration (Dockerfile, devcontainer.json) |
+| `/workspace/Dockerfile` | Container image definition |
+| `/workspace/docker-compose.yml` | Service configuration |
+| `/workspace/scripts/` | Verification and firewall scripts |
 | `/workspace/.claude/` | Claude Code project settings |
 
 ## Safety Constraints

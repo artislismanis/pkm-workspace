@@ -1,5 +1,8 @@
 # Mounted vault content (not part of this repo)
 vault/
 
+# Environment secrets (use .env.example as template)
+.env
+
 # Claude Code local overrides (personal, not shared)
 .claude/settings.local.json
