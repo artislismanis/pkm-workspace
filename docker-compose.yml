@@ -24,9 +24,9 @@ services:
       ttyd -W -p 7681 tmux new-session -A -s main
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:7681/"]
-      interval: 5s
+      interval: 30s
       timeout: 3s
-      retries: 5
+      retries: 3
       start_period: 10s
     restart: unless-stopped
     # ── Optional: ttyd authentication ──

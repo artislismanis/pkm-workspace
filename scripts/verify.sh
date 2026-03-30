@@ -15,7 +15,7 @@ echo "gh:      $(gh --version 2>&1 | head -1)"
 echo "delta:   $(delta --version 2>&1 | head -1)"
 echo "fzf:     $(fzf --version 2>&1 | head -1)"
 echo "uv:      $(uv --version 2>&1)"
-echo "Python:  $(uv run python --version 2>&1)"
+echo "Python:  $($(uv python find 2>/dev/null) --version 2>&1 || echo 'not found')"
 
 # Vault mount check
 echo ""

@@ -29,15 +29,11 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && apt-get update && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-# git-delta (better diffs)
+# git-delta + ttyd (web terminal)
 RUN ARCH="$(dpkg --print-architecture)" \
     && curl -fsSL "https://github.com/dandavison/delta/releases/download/${GIT_DELTA_VERSION}/git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb" \
        -o /tmp/git-delta.deb \
-    && dpkg -i /tmp/git-delta.deb \
-    && rm /tmp/git-delta.deb
-
-# ttyd (web terminal — architecture-aware)
-RUN ARCH="$(dpkg --print-architecture)" \
+    && dpkg -i /tmp/git-delta.deb && rm /tmp/git-delta.deb \
     && if [ "$ARCH" = "arm64" ]; then TTYD_ARCH="aarch64"; else TTYD_ARCH="x86_64"; fi \
     && curl -fsSL "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.${TTYD_ARCH}" \
        -o /usr/local/bin/ttyd \
@@ -52,15 +48,13 @@ RUN useradd -m -s /bin/bash claude \
     && chown -R claude:claude /workspace /home/claude/.claude
 
 # Firewall script + sudoers
-COPY scripts/init-firewall.sh /usr/local/bin/init-firewall.sh
-RUN chmod +x /usr/local/bin/init-firewall.sh \
-    && echo "claude ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" \
+COPY --chmod=755 scripts/init-firewall.sh /usr/local/bin/init-firewall.sh
+RUN echo "claude ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" \
        > /etc/sudoers.d/claude-firewall \
     && chmod 0440 /etc/sudoers.d/claude-firewall
 
 # tmux config
-COPY .tmux.conf /home/claude/.tmux.conf
-RUN chown claude:claude /home/claude/.tmux.conf
+COPY --chown=claude:claude .tmux.conf /home/claude/.tmux.conf
 
 # ══════════════════════════════════════════════════════════════
 # Phase 2: claude user — nvm, Node, Python, Claude Code
@@ -68,16 +62,12 @@ RUN chown claude:claude /home/claude/.tmux.conf
 USER claude
 ENV NVM_DIR=/home/claude/.nvm
 
-# nvm + Node
+# nvm + Node — symlink versioned dir to a stable path for non-interactive shells
 RUN curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh" | bash \
     && . "$NVM_DIR/nvm.sh" \
     && nvm install "${NODE_MAJOR}" \
-    && nvm alias default "${NODE_MAJOR}"
-
-# Make node/npm available to non-interactive shells (Docker RUN, healthcheck, etc.)
-# nvm installs to a versioned path; create a stable symlink
-RUN NODE_PATH=$(find "$NVM_DIR/versions/node" -maxdepth 1 -name "v${NODE_MAJOR}.*" | head -1) \
-    && ln -s "$NODE_PATH" "$NVM_DIR/default"
+    && nvm alias default "${NODE_MAJOR}" \
+    && ln -s "$(dirname "$(dirname "$(nvm which default)")")" "$NVM_DIR/default"
 ENV PATH=/home/claude/.nvm/default/bin:$PATH
 
 # Python via uv (userspace-managed)
