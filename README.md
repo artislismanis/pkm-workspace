@@ -18,10 +18,7 @@ Tooling lives in this repo; your vault is bind-mounted into the container, keepi
   networkingMode=mirrored
   ```
   Then restart WSL: `wsl --shutdown` from PowerShell.
-- **Anthropic API key** — set in your WSL shell:
-  ```bash
-  echo 'export ANTHROPIC_API_KEY="sk-ant-..."' >> ~/.bashrc
-  ```
+- **Anthropic API key**
 
 ## Quick Start
 
@@ -32,7 +29,7 @@ cd pkm-workspace
 
 # Configure environment
 cp .env.example .env
-# Edit .env: set ANTHROPIC_API_KEY and PKM_VAULT_PATH
+# Edit .env: set ANTHROPIC_API_KEY, PKM_VAULT_PATH, and git identity
 
 # Build and start
 docker compose up -d
@@ -64,10 +61,12 @@ Changes to vault files inside the container are immediately reflected on the hos
 
 **Tools:**
 - ttyd (web terminal) + tmux (terminal multiplexer)
+- ripgrep (`rg`) + fd — fast search and file finding
 - GitHub CLI (`gh`)
 - git-delta (better diffs)
+- atuin (shell history with fuzzy search)
 - fzf (fuzzy finder)
-- jq (JSON processor)
+- jq (JSON processor), tree, nano
 
 **Security:**
 - Optional network sandboxing via allowlist-based firewall:
@@ -77,15 +76,19 @@ Changes to vault files inside the container are immediately reflected on the hos
 
 ## Configuration
 
+### Git Identity
+
+Set `GIT_AUTHOR_NAME` and `GIT_AUTHOR_EMAIL` in `.env` — the entrypoint configures `git config --global` on container start. Required for committing.
+
 ### Authentication (optional)
 
-To password-protect the terminal, edit the `command` in `docker-compose.yml`:
+To password-protect the terminal, uncomment and edit the `command` in `docker-compose.yml`:
 
 ```yaml
-command: ttyd -W -p 7681 --credential user:${TTYD_PASSWORD:-changeme} tmux new-session -A -s main
+command: ["ttyd", "-W", "-p", "7681", "--credential", "user:changeme", "tmux", "new-session", "-A", "-s", "main"]
 ```
 
-Set `TTYD_PASSWORD` in `.env` and configure matching credentials in the Obsidian plugin settings (`ttydUsername` / `ttydPassword`).
+Configure matching credentials in the Obsidian plugin settings (`ttydUsername` / `ttydPassword`).
 
 ### Resource Limits (optional)
 
@@ -107,7 +110,9 @@ pkm-workspace/
 ├── docker-compose.yml      # Service definition (ttyd + tmux)
 ├── .tmux.conf              # tmux defaults (copied into image)
 ├── .env.example            # Configuration template
+├── .dockerignore           # Build context exclusions
 ├── scripts/
+│   ├── entrypoint.sh       # Container entrypoint (git config, etc.)
 │   ├── verify.sh           # Environment validation
 │   └── init-firewall.sh    # Network sandboxing (optional)
 ├── CLAUDE.md               # Instructions for Claude Code inside container

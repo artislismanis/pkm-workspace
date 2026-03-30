@@ -1,0 +1,7 @@
+# Build context exclusions
+.git
+.env
+vault/
+*.md
+LICENSE
+.claude/
