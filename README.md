@@ -105,7 +105,7 @@ deploy:
 
 ```
 pkm-workspace/
-├── Dockerfile              # Container image (Ubuntu 22.04 + all tools)
+├── Dockerfile              # Container image (Ubuntu 24.04 + all tools)
 ├── docker-compose.yml      # Service definition (ttyd + tmux)
 ├── .tmux.conf              # tmux defaults (copied into image)
 ├── .env.example            # Configuration template

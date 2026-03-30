@@ -2,7 +2,7 @@
 
 ## Environment
 
-- **Docker Compose container** (Ubuntu 22.04) providing: Node 22 LTS (nvm), Python 3.12 (uv), Claude Code CLI, ttyd web terminal, tmux
+- **Docker Compose container** (Ubuntu 24.04) providing: Node 22 LTS (nvm), Python 3.12 (uv), Claude Code CLI, ttyd web terminal, tmux
 - **ttyd** serves a web terminal on port 7681; the obsidian-claude-sandbox plugin connects via HTTP/WebSocket
 - Vault bind-mounted from host at `/workspace/vault/` (configured via `PKM_VAULT_PATH` in `.env`)
 - Changes to vault files are **immediately reflected on the host filesystem**

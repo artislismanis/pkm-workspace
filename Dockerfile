@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # ── Version ARGs ─────────────────────────────────────────────
 ARG CLAUDE_CODE_VERSION=latest
