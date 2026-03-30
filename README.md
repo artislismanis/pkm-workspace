@@ -82,12 +82,10 @@ Changes to vault files inside the container are immediately reflected on the hos
 To password-protect the terminal, edit the `command` in `docker-compose.yml`:
 
 ```yaml
-command: >
-  ttyd -W -p 7681 --credential user:${TTYD_PASSWORD:-changeme}
-  tmux new-session -A -s main
+command: ttyd -W -p 7681 --credential user:${TTYD_PASSWORD:-changeme} tmux new-session -A -s main
 ```
 
-Set `TTYD_PASSWORD` in `.env` and configure matching credentials in the Obsidian plugin settings.
+Set `TTYD_PASSWORD` in `.env` and configure matching credentials in the Obsidian plugin settings (`ttydUsername` / `ttydPassword`).
 
 ### Resource Limits (optional)
 

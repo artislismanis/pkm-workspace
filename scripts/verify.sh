@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 echo "=== PKM Sandbox — Environment Verification ==="
 
@@ -20,8 +20,8 @@ echo "Python:  $($(uv python find 2>/dev/null) --version 2>&1 || echo 'not found
 # Vault mount check
 echo ""
 if [ -d "/workspace/vault" ] && [ "$(ls -A /workspace/vault 2>/dev/null)" ]; then
-  VAULT_DIRS=$(find /workspace/vault -maxdepth 1 -type d | wc -l)
-  echo "Vault:   mounted at /workspace/vault ($((VAULT_DIRS - 1)) top-level directories)"
+  VAULT_ITEMS=$(ls -1 /workspace/vault | wc -l)
+  echo "Vault:   mounted at /workspace/vault (${VAULT_ITEMS} items)"
 else
   echo "WARNING: No vault found at /workspace/vault"
   echo "  Set PKM_VAULT_PATH in .env and restart the container"

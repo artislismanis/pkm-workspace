@@ -40,7 +40,8 @@ RUN ARCH="$(dpkg --print-architecture)" \
     && chmod +x /usr/local/bin/ttyd
 
 # uv (Python version & package manager)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+ARG UV_VERSION=0.7
+COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /uvx /usr/local/bin/
 
 # Create non-root user
 RUN useradd -m -s /bin/bash claude \

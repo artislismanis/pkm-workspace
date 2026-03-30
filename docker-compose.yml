@@ -31,9 +31,7 @@ services:
     restart: unless-stopped
     # ── Optional: ttyd authentication ──
     # To enable, replace the command above with:
-    #   command: >
-    #     ttyd -W -p 7681 --credential user:${TTYD_PASSWORD:-changeme}
-    #     tmux new-session -A -s main
+    #   command: ttyd -W -p 7681 --credential user:${TTYD_PASSWORD:-changeme} tmux new-session -A -s main
     # Then set TTYD_PASSWORD in your .env file and configure
     # matching credentials in the Obsidian plugin settings.
     #
