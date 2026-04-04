@@ -1,69 +1,125 @@
 # PKM Workspace
 
-A devcontainer for working with Obsidian vaults using Claude Code. Tooling lives in this repo; your vault is bind-mounted into the container, keeping content separate from configuration.
+A Docker container for working with Obsidian vaults using Claude Code. Provides a web terminal (ttyd) + tmux + Claude Code CLI, designed for the [obsidian-claude-sandbox](https://github.com/artislismanis/obsidian-claude-sandbox) plugin.
+
+Tooling lives in this repo; your vault is bind-mounted into the container, keeping content separate from configuration.
 
 ## Prerequisites
 
-- **Docker Desktop** (or equivalent container runtime)
-- **VS Code** with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
+- **WSL2** with a Linux distribution (e.g. Ubuntu)
+- **Docker Engine** installed inside WSL2 (not Docker Desktop on Windows):
+  ```bash
+  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  sudo usermod -aG docker $USER
+  ```
+- **WSL2 mirrored networking** — create/edit `%USERPROFILE%\.wslconfig` on Windows:
+  ```ini
+  [wsl2]
+  networkingMode=mirrored
+  ```
+  Then restart WSL: `wsl --shutdown` from PowerShell.
+- **Claude Code subscription** — the container assumes Claude Code is authenticated via subscription (not API key)
 
-## Setup
+## Quick Start
 
-1. Clone this repo:
-   ```bash
-   git clone <repo-url> pkm-workspace
-   ```
+```bash
+# Clone the repo (inside WSL)
+git clone <repo-url> pkm-workspace
+cd pkm-workspace
 
-2. Edit the vault mount path in `.devcontainer/devcontainer.json` — update the `source` in the `mounts` array to point to your Obsidian vault:
-   ```json
-   "mounts": [
-     "source=/path/to/your/vault,target=/workspace/vault,type=bind,consistency=cached"
-   ]
-   ```
+# Configure environment
+cp .env.example .env
+# Edit .env: set PKM_VAULT_PATH to your Obsidian vault
 
-   The `source` path format depends on your OS:
-   - **macOS / Linux** — standard absolute path, e.g. `/Users/you/Documents/MyVault` or `/home/you/Documents/MyVault`
-   - **Windows (WSL)** — use the `/mnt/` prefix, e.g. `/mnt/c/Users/you/Documents/MyVault`
-   - **Windows (native)** — use a Windows-style path, e.g. `C:\Users\you\Documents\MyVault` (Docker Desktop translates it automatically)
+# Build and start
+docker compose up -d
 
-3. Open the `pkm-workspace` folder in VS Code.
+# Verify
+docker compose exec pkm bash /workspace/scripts/verify.sh
+```
 
-4. When prompted, click **Reopen in Container** — or run the command **Dev Containers: Reopen in Container** from the palette (`Ctrl+Shift+P`).
+The web terminal is available at [http://localhost:7681](http://localhost:7681). The Obsidian plugin connects here automatically.
 
-5. Your vault appears at `/workspace/vault/` inside the container.
+## Vault Mount
+
+Set `PKM_VAULT_PATH` in your `.env` file to the host path of your Obsidian vault:
+
+| OS | Example path |
+|----|-------------|
+| WSL (recommended) | `/mnt/c/Users/you/Documents/MyVault` |
+| Linux native | `/home/you/Documents/MyVault` |
+| macOS | `/Users/you/Documents/MyVault` |
+
+Changes to vault files inside the container are immediately reflected on the host filesystem.
 
 ## What's Inside
 
-**Container runtimes:**
-- Node 22 LTS + npm
-- Python 3 + uv
+**Runtimes:**
+- Node 22 LTS (via nvm)
+- Python 3.12 (via uv)
 - Claude Code CLI
 
-**VS Code extensions (auto-installed):**
-- Foam, Markdown All in One — wikilinks & backlinks
-- Markdown preview enhancements (GitHub styles, YAML preamble, footnotes, checkboxes)
-- Prettier, ESLint, Markdownlint — formatting & linting
-- YAML validation, TODO Tree, Code Spell Checker
-- Claude Code IDE integration
+**Tools:**
+- ttyd (web terminal) + tmux (terminal multiplexer)
+- ripgrep (`rg`) + fd — fast search and file finding
+- GitHub CLI (`gh`)
+- git-delta (better diffs)
+- atuin (shell history with fuzzy search)
+- fzf (fuzzy finder)
+- jq (JSON processor), tree, nano
 
-## How It Works
+**Security:**
+- Optional network sandboxing via allowlist-based firewall:
+  ```bash
+  docker compose exec pkm sudo /usr/local/bin/init-firewall.sh
+  ```
 
-The devcontainer builds from a Dockerfile and bind-mounts your vault into the container. The repo itself is mounted at `/workspace`, and the vault appears at `/workspace/vault/`.
+## Configuration
+
+### Resource Limits (optional)
+
+Uncomment the `deploy` section in `docker-compose.yml`:
+
+```yaml
+deploy:
+  resources:
+    limits:
+      memory: 4G
+      cpus: "2.0"
+```
+
+## File Structure
 
 ```
-/workspace/                     # this repo (tooling)
-  .devcontainer/
-  vault/                        # your Obsidian vault (bind mount)
-    ...
+pkm-workspace/
+├── Dockerfile              # Container image (Ubuntu 24.04 + all tools)
+├── docker-compose.yml      # Service definition (ttyd + tmux)
+├── .tmux.conf              # tmux defaults (copied into image)
+├── .env.example            # Configuration template
+├── .dockerignore           # Build context exclusions
+├── scripts/
+│   ├── verify.sh           # Environment validation
+│   └── init-firewall.sh    # Network sandboxing (optional)
+├── CLAUDE.md               # Instructions for Claude Code inside container
+└── README.md
+```
+
+## Commands
+
+```bash
+docker compose up -d        # Start container
+docker compose down          # Stop container
+docker compose ps            # Check status (should show "healthy")
+docker compose restart       # Restart container
+docker compose logs -f       # View logs
+docker compose build         # Rebuild image after Dockerfile changes
 ```
 
 ## Verification
 
-After the container starts, check the terminal for post-create output confirming all runtimes are available and the vault is mounted. You can also verify manually:
+After starting the container:
 
-```bash
-node --version
-python3 --version
-claude --version
-ls /workspace/vault/
-```
+1. `docker compose ps` — service shows as **healthy**
+2. `docker compose exec pkm bash /workspace/scripts/verify.sh` — all tools present
+3. Open [http://localhost:7681](http://localhost:7681) — ttyd web terminal loads
+4. In the terminal: `claude --version` and `ls /workspace/vault/`
