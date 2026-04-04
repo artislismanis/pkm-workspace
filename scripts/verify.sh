@@ -30,24 +30,6 @@ else
   echo "  Set PKM_VAULT_PATH in .env and restart the container"
 fi
 
-# API key check (existence only, never print the value)
-if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
-  echo "API Key: set (${#ANTHROPIC_API_KEY} chars)"
-else
-  echo "WARNING: ANTHROPIC_API_KEY is not set"
-  echo "  Add it to .env and restart the container"
-fi
-
-# Git identity
-GIT_NAME=$(git config --global user.name 2>/dev/null || true)
-GIT_EMAIL=$(git config --global user.email 2>/dev/null || true)
-if [ -n "$GIT_NAME" ] && [ -n "$GIT_EMAIL" ]; then
-  echo "Git:     ${GIT_NAME} <${GIT_EMAIL}>"
-else
-  echo "WARNING: Git identity not configured"
-  echo "  Set GIT_AUTHOR_NAME and GIT_AUTHOR_EMAIL in .env"
-fi
-
 # ttyd reachability (only meaningful when ttyd is running)
 if curl -sf http://localhost:7681/ > /dev/null 2>&1; then
   echo "ttyd:    listening on port 7681"

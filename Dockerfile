@@ -70,8 +70,6 @@ RUN echo "claude ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" \
 # tmux config
 COPY --chown=claude:claude .tmux.conf /home/claude/.tmux.conf
 
-# Entrypoint
-COPY --chmod=755 scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # ══════════════════════════════════════════════════════════════
 # Phase 2: claude user — nvm, Node, Python, Claude Code, atuin
@@ -112,5 +110,4 @@ RUN atuin init bash > /tmp/atuin-init.bash \
 
 WORKDIR /workspace
 EXPOSE 7681
-ENTRYPOINT ["entrypoint.sh"]
 CMD ["ttyd", "-W", "-p", "7681", "tmux", "new-session", "-A", "-s", "main"]
