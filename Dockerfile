@@ -1,3 +1,7 @@
+# ── Version ARGs (global scope for multi-stage FROM) ────────
+ARG UV_VERSION=0.7
+
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 FROM ubuntu:24.04
 
 # ── Version ARGs ─────────────────────────────────────────────
@@ -7,7 +11,6 @@ ARG PYTHON_VERSION=3.12
 ARG NODE_MAJOR=22
 ARG TTYD_VERSION=1.7.7
 ARG NVM_VERSION=0.40.3
-ARG UV_VERSION=0.7
 ARG ATUIN_VERSION=18.13.5
 
 # ══════════════════════════════════════════════════════════════
@@ -54,7 +57,7 @@ RUN ARCH="$(dpkg --print-architecture)" \
     && rm -rf /tmp/atuin*
 
 # uv (Python version & package manager)
-COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /uvx /usr/local/bin/
+COPY --from=uv /uv /uvx /usr/local/bin/
 
 # Create non-root user
 RUN useradd -m -s /bin/bash claude \
