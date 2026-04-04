@@ -41,11 +41,10 @@ docker compose exec pkm bash /workspace/scripts/verify.sh
 - [ ] Can type commands and see output
 - [ ] Terminal resizes when browser window resizes (`-W` flag working)
 
-> **Note:** Copy/paste in the browser — tmux mouse mode intercepts selection, so
-> normal copy won't work. Hold **Shift** while selecting text to bypass tmux and
-> use the browser's native selection, then copy with Ctrl+C as usual. This is
-> only relevant when accessing ttyd directly in a browser, not via the Obsidian
-> plugin's WebSocket connection.
+> **Note:** Copy/paste in the browser — hold **Shift** while selecting text to
+> ensure the browser handles selection (bypassing any terminal capture), then
+> copy with Ctrl+C as usual. This is only relevant when accessing ttyd directly
+> in a browser, not via the Obsidian plugin's WebSocket connection.
 
 ## 4. Vault Mount
 

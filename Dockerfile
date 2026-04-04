@@ -37,20 +37,16 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && apt-get update && apt-get install -y --no-install-recommends gh \
     && rm -rf /var/lib/apt/lists/*
 
-# git-delta + ttyd (web terminal)
+# git-delta, ttyd (web terminal), atuin (shell history)
 RUN ARCH="$(dpkg --print-architecture)" \
+    && if [ "$ARCH" = "arm64" ]; then NATIVE_ARCH="aarch64"; else NATIVE_ARCH="x86_64"; fi \
     && curl -fsSL "https://github.com/dandavison/delta/releases/download/${GIT_DELTA_VERSION}/git-delta_${GIT_DELTA_VERSION}_${ARCH}.deb" \
        -o /tmp/git-delta.deb \
     && dpkg -i /tmp/git-delta.deb && rm /tmp/git-delta.deb \
-    && if [ "$ARCH" = "arm64" ]; then TTYD_ARCH="aarch64"; else TTYD_ARCH="x86_64"; fi \
-    && curl -fsSL "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.${TTYD_ARCH}" \
+    && curl -fsSL "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.${NATIVE_ARCH}" \
        -o /usr/local/bin/ttyd \
-    && chmod +x /usr/local/bin/ttyd
-
-# atuin (shell history)
-RUN ARCH="$(dpkg --print-architecture)" \
-    && if [ "$ARCH" = "arm64" ]; then ATUIN_ARCH="aarch64"; else ATUIN_ARCH="x86_64"; fi \
-    && curl -fsSL "https://github.com/atuinsh/atuin/releases/download/v${ATUIN_VERSION}/atuin-${ATUIN_ARCH}-unknown-linux-gnu.tar.gz" \
+    && chmod +x /usr/local/bin/ttyd \
+    && curl -fsSL "https://github.com/atuinsh/atuin/releases/download/v${ATUIN_VERSION}/atuin-${NATIVE_ARCH}-unknown-linux-gnu.tar.gz" \
        -o /tmp/atuin.tar.gz \
     && tar -xzf /tmp/atuin.tar.gz -C /tmp \
     && install -m 755 /tmp/atuin-*/atuin /usr/local/bin/atuin \
@@ -73,7 +69,6 @@ RUN echo "claude ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" \
 # tmux config
 COPY --chown=claude:claude .tmux.conf /home/claude/.tmux.conf
 
-
 # ══════════════════════════════════════════════════════════════
 # Phase 2: claude user — nvm, Node, Python, Claude Code, atuin
 # ══════════════════════════════════════════════════════════════
@@ -87,11 +82,12 @@ RUN curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/insta
     && . "$NVM_DIR/nvm.sh" \
     && nvm install "${NODE_MAJOR}" \
     && nvm alias default "${NODE_MAJOR}" \
-    && ln -s "$(dirname "$(dirname "$(nvm which default)")")" "$NVM_DIR/default"
+    && ln -s "$(dirname "$(dirname "$(nvm which default)")")" "$NVM_DIR/default" \
+    && nvm cache clear
 ENV PATH=/home/claude/.nvm/default/bin:$PATH
 
 # Python via uv (userspace-managed)
-RUN uv python install "${PYTHON_VERSION}"
+RUN uv python install "${PYTHON_VERSION}" && uv cache clean
 
 # Claude Code CLI
 RUN npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
