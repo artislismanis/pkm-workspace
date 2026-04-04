@@ -1,26 +1,23 @@
 #!/bin/bash
-set -euo pipefail
 
 echo "=== PKM Sandbox — Environment Verification ==="
 
-# Tool versions
-echo "Node:    $(node --version 2>&1)"
-echo "npm:     $(npm --version 2>&1)"
-echo "git:     $(git --version 2>&1)"
-echo "tmux:    $(tmux -V 2>&1)"
-echo "ttyd:    $(ttyd --version 2>&1 | head -1)"
-echo "jq:      $(jq --version 2>&1)"
-echo "Claude:  $(claude --version 2>&1)"
-echo "gh:      $(gh --version 2>&1 | head -1)"
-echo "delta:   $(delta --version 2>&1 | head -1)"
-echo "fzf:     $(fzf --version 2>&1 | head -1)"
-echo "rg:      $(rg --version 2>&1 | head -1)"
-echo "fd:      $(fd --version 2>&1)"
-echo "atuin:   $(atuin --version 2>&1)"
-echo "uv:      $(uv --version 2>&1)"
-echo "Python:  $($(uv python find 2>/dev/null) --version 2>&1 || echo 'not found')"
+echo "Node:    $(node --version 2>&1 || echo 'not found')"
+echo "npm:     $(npm --version 2>&1 || echo 'not found')"
+echo "git:     $(git --version 2>&1 || echo 'not found')"
+echo "tmux:    $(tmux -V 2>&1 || echo 'not found')"
+echo "ttyd:    $(ttyd --version 2>&1 | head -1 || echo 'not found')"
+echo "jq:      $(jq --version 2>&1 || echo 'not found')"
+echo "Claude:  $(claude --version 2>&1 || echo 'not found')"
+echo "gh:      $(gh --version 2>&1 | head -1 || echo 'not found')"
+echo "delta:   $(delta --version 2>&1 | head -1 || echo 'not found')"
+echo "fzf:     $(fzf --version 2>&1 | head -1 || echo 'not found')"
+echo "rg:      $(rg --version 2>&1 | head -1 || echo 'not found')"
+echo "fd:      $(fd --version 2>&1 || echo 'not found')"
+echo "atuin:   $(atuin --version 2>&1 || echo 'not found')"
+echo "uv:      $(uv --version 2>&1 || echo 'not found')"
+PY=$(uv python find 2>/dev/null) && echo "Python:  $($PY --version 2>&1)" || echo "Python:  not found"
 
-# Vault mount check
 echo ""
 if [ -d "/workspace/vault" ] && [ "$(ls -A /workspace/vault 2>/dev/null)" ]; then
   VAULT_ITEMS=$(ls -1 /workspace/vault | wc -l)
@@ -30,7 +27,6 @@ else
   echo "  Set PKM_VAULT_PATH in .env and restart the container"
 fi
 
-# ttyd reachability (only meaningful when ttyd is running)
 if curl -sf http://localhost:7681/ > /dev/null 2>&1; then
   echo "ttyd:    listening on port 7681"
 else

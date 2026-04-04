@@ -17,7 +17,7 @@ ARG ATUIN_VERSION=18.13.5
 # Phase 1: ROOT — system packages, binaries, permissions
 # ══════════════════════════════════════════════════════════════
 
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 # System packages — includes Claude Code deps (ripgrep, git, curl)
 # and firewall tools (iptables, ipset, iproute2, dnsutils, aggregate)
